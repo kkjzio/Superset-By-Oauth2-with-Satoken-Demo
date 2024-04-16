@@ -1,6 +1,6 @@
 ## superset和Oauth2服务器登录的大致交互流程
 
-![](.\README.assets\supset登录.jpg)
+![](https://raw.githubusercontent.com/kkjzio/Superset-By-Oauth2-with-Satoken-Demo/main/README.assets/supset登录.jpg)
 
 
 
@@ -157,7 +157,7 @@ http://127.0.0.1:8088
 
 进入superset页面
 
-![image-20240416112303068](.\README.assets\image-20240416112303068.png)
+![image-20240416112303068](https://raw.githubusercontent.com/kkjzio/Superset-By-Oauth2-with-Satoken-Demo/main/README.assets/image-20240416112303068.png)
 
 点击登录后，使用最高权限的管理员登录
 
@@ -171,19 +171,19 @@ password:123456
 
 通过服务器认证后进入主界面，设置连接数据库和建立图表，demo中主要是用了`bilibili`数据库中的`video`表，主要要导入`videoID`、`videocAtegory`两个字段，下列为生成的图表字段参考
 
-![image-20240416112923877](.\README.assets\image-20240416112923877.png)
+![image-20240416112923877](https://raw.githubusercontent.com/kkjzio/Superset-By-Oauth2-with-Satoken-Demo/main/README.assets/image-20240416112923877.png)
 
 
 
 之后在编辑仪表盘中，加上slug，这个slug会被作为前端指定的的仪表盘对象，所以做表之前要确认好，这里用了demo中展示用的slug`Test-Dashboard`
 
-![image-20240416113031891](.\README.assets\image-20240416113031891.png)
+![image-20240416113031891](https://raw.githubusercontent.com/kkjzio/Superset-By-Oauth2-with-Satoken-Demo/main/README.assets/image-20240416113031891.png)
 
 
 
 接着准备两个筛选器:
 
-![image-20240416113319170](.\README.assets\image-20240416113319170.png)
+![image-20240416113319170](https://raw.githubusercontent.com/kkjzio/Superset-By-Oauth2-with-Satoken-Demo/main/README.assets/image-20240416113319170.png)
 
 
 
@@ -191,17 +191,17 @@ password:123456
 
 `VideoType`:
 
-![image-20240416113528544](.\README.assets\image-20240416113528544.png)
+![image-20240416113528544](https://raw.githubusercontent.com/kkjzio/Superset-By-Oauth2-with-Satoken-Demo/main/README.assets/image-20240416113528544.png)
 
 `videoID`:
 
-![image-20240416113633915](.\README.assets\image-20240416113633915.png)
+![image-20240416113633915](https://raw.githubusercontent.com/kkjzio/Superset-By-Oauth2-with-Satoken-Demo/main/README.assets/image-20240416113633915.png)
 
 
 
 设置完毕后，不要忘记点击发布，点击发布后的状态应该为如下：
 
-![image-20240416113737552](.\README.assets\image-20240416113737552.png)
+![image-20240416113737552](https://raw.githubusercontent.com/kkjzio/Superset-By-Oauth2-with-Satoken-Demo/main/README.assets/image-20240416113737552.png)
 
 
 
@@ -213,7 +213,7 @@ http://sa-oauth-client.com:8002
 
 点击授权码登录中的显示登录
 
-![image-20240416111738547](.\README.assets\image-20240416111738547.png)
+![image-20240416111738547](https://raw.githubusercontent.com/kkjzio/Superset-By-Oauth2-with-Satoken-Demo/main/README.assets/image-20240416111738547.png)
 
 这里设置了两种用户权限，管理员（~~这步其实可以跳过，但是我没改demo的认证逻辑~~）
 
@@ -230,9 +230,9 @@ password:123456
 
 登录后使用最下面的选项框即可动态使用筛选器
 
-![image-20240416114113907](.\README.assets\image-20240416114113907.png)
+![image-20240416114113907](https://raw.githubusercontent.com/kkjzio/Superset-By-Oauth2-with-Satoken-Demo/main/README.assets/image-20240416114113907.png)
 
-![image-20240416114209786](.\README.assets\image-20240416114209786.png)
+![image-20240416114209786](https://raw.githubusercontent.com/kkjzio/Superset-By-Oauth2-with-Satoken-Demo/main/README.assets/image-20240416114209786.png)
 
 
 
