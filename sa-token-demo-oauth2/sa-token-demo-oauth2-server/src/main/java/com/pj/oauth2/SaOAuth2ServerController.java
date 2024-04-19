@@ -6,11 +6,13 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.baomidou.mybatisplus.core.toolkit.sql.SqlInjectionUtils;
 import com.bazaarvoice.jackson.rison.RisonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.*;
 import com.pj.client.Client;
 import lombok.Data;
+import org.apache.ibatis.jdbc.SQL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -278,6 +280,61 @@ public class SaOAuth2ServerController {
 
     }
 
+    @RequestMapping("/oauth2/superset/videoSearchSql")
+    public SaResult videoSearchSql(){
+        System.out.println("------- 进入请求: " + SaHolder.getRequest().getUrl());
+        System.out.println("------- 报文为: ");
+        SaHolder.getRequest().getParamMap().forEach((k, v) -> {
+            System.out.println("Key: " + k + ", Value: " + v);
+        });
+        Map<String, String> paramMap = SaHolder.getRequest().getParamMap();
+
+        // 登录处理
+        String accessToken = SaHolder.getRequest().getParam("access_token");
+        // 若是从请求参数中找不到access_token，就去请求头里找
+        if (Objects.isNull(accessToken)) {
+            accessToken = SaHolder.getRequest().getHeader("Authorization");
+            if (accessToken != null && accessToken.startsWith("Bearer ")) {
+                accessToken = accessToken.substring(7);
+            }
+        }
+        Object loginId = SaOAuth2Util.getLoginIdByAccessToken(accessToken);
+        System.out.println("-------- 此Access-Token对应的账号id: " + loginId);
+        // 校验 Access-Token 是否具有权限: userinfo
+        SaOAuth2Util.checkScope(accessToken, "userinfo");
+
+//        JsonElement dashboards;
+
+        // 处理json数据,生成sql语句
+        Gson gson = new Gson();
+        JsonObject searchValueElement = gson.fromJson(paramMap.get("searchValue"), JsonElement.class).getAsJsonObject();
+        String searchValue1 = searchValueElement.get("value1").getAsString();
+        String searchValue2 = searchValueElement.get("value2").getAsString();
+
+        // sql字符串注入检测
+        if (!isNumericOrHyphen(searchValue1) ||
+                !isNumericOrHyphen(searchValue2) ||
+                SqlInjectionUtils.check(searchValue1) ||
+                SqlInjectionUtils.check(searchValue2)) {
+            return SaResult.error("输入的搜索值不合法");
+        }
+
+
+        SQL sql = new SQL()
+                .SELECT("videoID", "videoName", "videocAtegory","videoTime")
+                .FROM("bilibili.video")
+                .WHERE("'videoID' >= " + Integer.parseInt(searchValue1)+ " AND 'videoID' <= " + Integer.parseInt(searchValue2));
+        String sqlText = sql.toString();
+
+
+        
+
+
+
+        return SaResult.data(sqlText);
+
+    }
+
 
 //
 //	public static HttpUriRequest geListDashboardsRequest(String host, int port, String authToken)
@@ -442,6 +499,14 @@ public class SaOAuth2ServerController {
         private String filterType;
         private String columnName;
         private String values;
+    }
+
+    @Data
+    class SqlSeacrch {
+//        private String tableName;
+        private String columns;
+        private String op;
+        private String value;
     }
 
 }

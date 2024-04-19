@@ -179,6 +179,15 @@
     <code>打开新的窗口，跳转至superset</code>
 
 
+    <h3>测试SurpsetSqlLab</h3>
+    <p class="pst">测试sqlLab接口是否可用，输入视频ID的最小值和最大值</p>
+    <form>
+        <input type="text" name="value1" placeholder="最小值"><br>
+        <input type="text" name="value2" placeholder="最大值"><br>
+        <button type="button" onclick=surpsetSqlLab()>打开Surpset</button>
+    </form>
+    <code>打开新的窗口，跳转至superset</code>
+
     <br><br>
     <span>更多资料请参考 Sa-Token 官方文档地址：</span>
     <a href="https://sa-token.cc/">https://sa-token.cc/</a>
@@ -312,6 +321,40 @@
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(data),
+            dataType: 'json',
+            success: function (res) {
+                console.log('返回：', res);
+                if (res.code == 200) {
+                    // setInfo(res.data);
+                    layer.msg('获取成功！:' + res.data.url.toString());
+                    window.open(res.data.url.toString(),'_blank');
+                } else {
+                    layer.msg(res.msg);
+                }
+            },
+            error: function (xhr, type, errorThrown) {
+                return layer.alert("异常：" + JSON.stringify(xhr));
+            }
+        });
+    }
+
+    function surpsetSqlLab() {
+        var accessToken = $('.access_token').text();
+        var data= {
+            accessToken: accessToken.toString(),
+                value1 : $('[name=value1]').val(),
+                value2 : $('[name=value2]').val()
+        };
+        console.log(data);
+        if (accessToken == '') {
+            return layer.alert('您还没有获取 Access-Token ，请先授权登录');
+        }
+        $.ajax({
+            url: '/surpsetSqlLab',
+            // method: 'POST',
+            // contentType: 'application/json',
+            // data: JSON.stringify(data),
+            data: data,
             dataType: 'json',
             success: function (res) {
                 console.log('返回：', res);

@@ -35,6 +35,11 @@ spring:
                 max-idle: 10
                 # 连接池中的最小空闲连接
                 min-idle: 0
+    # MyBatisplus和jdbc不自动装配
+    autoconfigure:
+        exclude:
+            - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+            - com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration
 
 superset:
     # 基础信息配置

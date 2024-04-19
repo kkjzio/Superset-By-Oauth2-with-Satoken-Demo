@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
+import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -191,6 +193,38 @@ public class SaOAuthClientController {
                 .addBodyPara("access_token", superSetRequestData.getAccessToken())
                 .addBodyPara("slug", superSetRequestData.getSlug())
                 .addBodyPara("filters", filtersJson)
+                .post()
+                .getBody()
+                .toString();
+        SoMap so = SoMap.getSoMap().setJsonString(str);
+        System.out.println("返回结果: " + so);
+
+        // code不等于200  代表请求失败
+        if (so.getInt("code") != 200) {
+            return SaResult.error(so.getString("msg"));
+        }
+
+        // 返回相关参数 (data=获取到的资源 )
+        SoMap data = so.getMap("data");
+        return SaResult.data(data);
+//		return "redirect:http://localhost:8088/superset/dashboard/1/";
+    }
+
+
+
+    @RequestMapping("/surpsetSqlLab")
+    public SaResult surpsetSqlLab(String accessToken, String value1,String value2) {
+        JSONObject searchValue = new JSONObject();
+        try {
+            searchValue.put("value1", value1);
+            searchValue.put("value2", value2);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+        // 调用Server端接口，查询开放的资源
+        String str = OkHttps.sync(serverUrl + "/oauth2/superset/videoSearchSql")
+                .addBodyPara("access_token", accessToken)
+                .addBodyPara("searchValue", searchValue)
                 .post()
                 .getBody()
                 .toString();
