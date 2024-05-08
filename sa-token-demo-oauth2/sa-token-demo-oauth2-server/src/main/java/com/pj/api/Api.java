@@ -7,7 +7,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,6 +32,12 @@ public class Api {
     private static final String IMPORT_DASHBOARD_API_ENDPOINT = "/api/v1/dashboard/import/";
 
     private static final String REFRESH_TOKEN_API_ENDPOINT = "/api/v1/security/refresh";
+
+    private static final String SQLLAB_EXECUTE_API_ENDPOINT = "/api/v1/sqllab/execute/";
+
+    private static final String EXPLORE_FORM_DATA_API_ENDPOINT = "/api/v1/explore/form_data";
+
+    private static final String EXPORT_PERMANENT_LINK_API_ENDPOINT = "/api/v1/explore/permalink";
 
     public static HttpUriRequest getAuthTokenRequest(String host, int port, String username, String password)
             throws URISyntaxException, UnsupportedEncodingException {
@@ -142,6 +147,37 @@ public class Api {
                 .setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + refreshToken)
                 .setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()) //
                 .setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.getMimeType()) //
+                .build();
+        return post;
+    }
+
+    public static HttpUriRequest getSqlLabExecuteRequest(String host, int port, String authToken, JsonObject body)
+            throws URISyntaxException, UnsupportedEncodingException {
+        return getHttpUriRequestWithBody(host, port, authToken, body, SQLLAB_EXECUTE_API_ENDPOINT);
+    }
+
+
+    public static HttpUriRequest getExploreFormDataRequest(String host, int port, String authToken, JsonObject body)
+            throws URISyntaxException, UnsupportedEncodingException{
+        return getHttpUriRequestWithBody(host, port, authToken, body, EXPLORE_FORM_DATA_API_ENDPOINT);
+    }
+
+    public static HttpUriRequest getPermalinkRequest(String host, int port, String authToken, JsonObject body)
+            throws URISyntaxException, UnsupportedEncodingException {
+        return getHttpUriRequestWithBody(host, port, authToken, body, EXPORT_PERMANENT_LINK_API_ENDPOINT);
+    }
+
+    private static HttpUriRequest getHttpUriRequestWithBody(String host, int port, String authToken, JsonObject body, String exploreFormDataApiEndpoint) throws URISyntaxException, UnsupportedEncodingException {
+        URI apiUri = buildUri(host, port, exploreFormDataApiEndpoint, null);
+
+        StringEntity entity = new StringEntity(body.toString());
+
+        HttpUriRequest post = RequestBuilder.post() //
+                .setUri(apiUri) //
+                .setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + authToken) //
+                .setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()) //
+                .setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.getMimeType()) //
+                .setEntity(entity) //
                 .build();
         return post;
     }

@@ -25,4 +25,3 @@ class CustomSsoSecurityManager(SupersetSecurityManager):
             return { 'name' : m2['nickname'], 'email' : m2['email'], 'username' : m2['username'], 'first_name': m2['first_name'], 'last_name': m2['last_name']}
 
 
-

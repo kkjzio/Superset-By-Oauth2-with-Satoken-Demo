@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 
+import com.google.gson.JsonObject;
 import lombok.Getter;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
@@ -44,7 +45,6 @@ public class Client {
     private String authToken;
     private String csrfToken;
     private CloseableHttpClient client;
-
     private String refreshToken;
 
 
@@ -108,20 +108,49 @@ public class Client {
     public JsonElement dashboards()
             throws URISyntaxException, ClientProtocolException, IOException {
         HttpUriRequest request = Api.geListDashboardsRequest(host, port, authToken);
-        // 当token过期时，尝试重新获取token并重新请求
+        return getRespondJsonElement(request);
+    }
+
+
+    /**
+     * Executes a SQL Lab request with the provided JSON body.
+     *
+     * @param body The JSON body to include in the SQL Lab Execute request. This should contain the SQL query to be executed.
+     * @return A JsonElement representing the response from the server.
+     * @throws URISyntaxException If the URI of the request is not correctly formatted.
+     * @throws ClientProtocolException If there is an error in the HTTP protocol used for the request.
+     * @throws IOException If there is an error when sending the request or receiving the response.
+     */
+    public JsonElement sqllabExecute(JsonObject body)
+    throws URISyntaxException, ClientProtocolException, IOException{
+        HttpUriRequest request = Api.getSqlLabExecuteRequest(host, port, authToken, body);
+        return getRespondJsonElement(request);
+    }
+
+    public JsonElement exploreFormData(JsonObject body)
+            throws URISyntaxException, ClientProtocolException, IOException{
+        HttpUriRequest request = Api.getExploreFormDataRequest(host, port, authToken, body);
+        return getRespondJsonElement(request);
+    }
+
+    public JsonElement permalink(JsonObject body)
+            throws URISyntaxException, ClientProtocolException, IOException{
+        HttpUriRequest request = Api.getPermalinkRequest(host, port, authToken,body);
+        return getRespondJsonElement(request);
+    }
+
+    private JsonElement getRespondJsonElement(HttpUriRequest request) throws IOException {
         ApiResponse resp;
         try {
             resp = executeRequest(request);
         }catch (UnexceptedResponseException e){
+            // 登录失败，尝试刷新token
             // 在bean中获取ApplicationContext
             ApplicationContext context = ApplicationContextProvider.getApplicationContext();
             ClientTemplateImpl clientTemplate = context.getBean(ClientTemplateImpl.class);
             clientTemplate.refreshClient(this);
             resp = executeRequest(request);
-//            refreshClient(host, port, null, null);
-//            ApiResponse resp = executeRequest(request);
         }
-
         return JsonParser.parseString(resp.getBody());
     }
 

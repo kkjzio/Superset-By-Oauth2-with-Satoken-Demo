@@ -28,7 +28,7 @@
 			function doLogin() {
 				console.log('-----------');
 				$.ajax({
-					url: '/oauth2/doLogin',
+					url: 'http://server.mydomain.com/oauth2/doLogin',
 					data: {
 						name: $('[name=name]').val(),
 						pwd: $('[name=pwd]').val()
@@ -38,6 +38,8 @@
 						if(res.code == 200) {
 							layer.msg('登录成功！');
 							setTimeout(function() {
+								// http://192.168.59.1:8001/oauth2/authorize?response_type=code&client_id=1001&redirect_uri=http%3A%2F%2Fmydomain.com%2Foauth-authorized%2FegaSSO&scope=userinfo&state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuZXh0IjpbImh0dHA6Ly8xMjcuMC4wLjEvc3VwZXJzZXQvZXhwbG9yZS9wLzMyb1pOeXdFd1FOLz9zdGFuZGFsb25lPTEmaGVpZ2h0PTQwMCJdfQ.i89qjqFnPk7HY5i_F8DvVn1Iyu9CSiIoJMIwb1UxNms
+								// window.location.href = 'http://sa-oauth-server.com:8001/oauth2/authorize?response_type=code&client_id=' + getParam('client_id') + '&scope=' + getParam('scope') + '&redirect_uri=' + getParam('redirect_uri');
 								location.reload(true);
 							}, 800);
 						} else {

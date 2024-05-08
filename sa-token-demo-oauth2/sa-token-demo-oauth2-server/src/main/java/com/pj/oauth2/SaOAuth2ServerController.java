@@ -11,9 +11,13 @@ import com.bazaarvoice.jackson.rison.RisonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.*;
 import com.pj.client.Client;
+import com.pj.tool.RandomString;
 import lombok.Data;
 import org.apache.ibatis.jdbc.SQL;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.configurationprocessor.json.JSONArray;
+import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,6 +45,7 @@ public class SaOAuth2ServerController {
     //    private static final String SUPERSET_HOST = "http://192.168.59.129:8088";
     private final String SUPERSET_FILTER_URL_L = "/superset/dashboard/";
     private final String SUPERSET_FILTER_URL_R = "/?standalone=3&show_filters=0&native_filters=";
+    private final String SUPERSET_PERMALINK_URL = "/superset/explore/p/";
 //	private static final Integer SUPERSET_PORT = 8088;
 //	private static final String LIST_DASHBOARD_API_ENDPOINT = "/api/v1/dashboard/";
 
@@ -48,6 +53,7 @@ public class SaOAuth2ServerController {
     @RequestMapping("/oauth2/*")
     public Object request() {
         System.out.println("------- 进入请求: " + SaHolder.getRequest().getUrl());
+        System.out.println("------- 请求头为: " + SaHolder.getRequest().getHeader("Referer"));
         System.out.println("------- 报文为: ");
         SaHolder.getRequest().getParamMap().forEach((k, v) -> {
             System.out.println("Key: " + k + ", Value: " + v);
@@ -281,7 +287,17 @@ public class SaOAuth2ServerController {
     }
 
     @RequestMapping("/oauth2/superset/videoSearchSql")
-    public SaResult videoSearchSql(){
+    public SaResult videoSearchPublic(){
+        Map urlMap = videoSearchSql();
+
+        System.out.println("返回的永久链接报文为："+urlMap);
+
+        return SaResult.data(urlMap);
+
+    }
+
+
+    private Map videoSearchSql(){
         System.out.println("------- 进入请求: " + SaHolder.getRequest().getUrl());
         System.out.println("------- 报文为: ");
         SaHolder.getRequest().getParamMap().forEach((k, v) -> {
@@ -319,95 +335,94 @@ public class SaOAuth2ServerController {
             return SaResult.error("输入的搜索值不合法");
         }
 
+        // TODO:这里设定要展示的列
+        List<String> all_columns = Arrays.asList("videoID", "videoName","videocAtegory","videoTime");
+        SQL sql = new SQL();
+        for(String column: all_columns){
+            sql.SELECT(column);
+        }
+        sql.FROM("video")
+                .WHERE("videoID >= " + searchValue1 + " AND videoID <= " + searchValue2);
 
-        SQL sql = new SQL()
-                .SELECT("videoID", "videoName", "videocAtegory","videoTime")
-                .FROM("bilibili.video")
-                .WHERE("'videoID' >= " + Integer.parseInt(searchValue1)+ " AND 'videoID' <= " + Integer.parseInt(searchValue2));
+//        SQL sql = new SQL()
+//                .SELECT("videoID", "videoName", "videocAtegory","videoTime")
+//                .FROM("video")
+//                .WHERE("'videoID' >= " + "{{value1}}"+ " AND 'videoID' <= " + Integer.parseInt(searchValue2));
         String sqlText = sql.toString();
 
+        // 预先设定或者查询好的database_id、schema、tab、queryLimit
+        Integer database_id = 1;
+        String schema = "bilibili";
+        String tab = "myVideoTest";
+        Integer queryLimit = 1000;
+        // 生成templateParams
+        JsonObject templateParams = new JsonObject();
+        templateParams.add("value1", new JsonPrimitive(Integer.parseInt(searchValue1)));
+        templateParams.add("value2", new JsonPrimitive(Integer.parseInt(searchValue2)));
+        Gson gsonDisableHtmlEscaping = new GsonBuilder().disableHtmlEscaping().create();
+        String jsonString = gsonDisableHtmlEscaping.toJson(templateParams);
 
-        
+        JsonObject sqlExcejsonObject = generateSqlExeucuteJson(database_id, sqlText,
+                schema, tab, queryLimit, jsonString);
+
+        // 向superset发起sqllabExecute
+        JsonElement sqllabExecuteJson = null;
+        try {
+            sqllabExecuteJson = client.sqllabExecute(sqlExcejsonObject);
+        } catch (URISyntaxException | IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // 判断是否请求成功
+        if(Objects.isNull(sqllabExecuteJson.getAsJsonObject().get("status")) ||
+                !sqllabExecuteJson.getAsJsonObject().get("status").getAsString().equals("success"))
+            return SaResult.error("构建sqllab失败");
+        Integer query_id = sqllabExecuteJson.getAsJsonObject().get("query_id").getAsInt();
 
 
+        //创建from_data
 
-        return SaResult.data(sqlText);
+        JsonObject exploreFormDatajsonObject = generateExploreFormDataJson(query_id, all_columns);
 
+        // 向superset发起exploreFormData数据装载请求
+        JsonElement exploreFormDataJson = null;
+        try {
+            exploreFormDataJson = client.exploreFormData(exploreFormDatajsonObject);
+        } catch (URISyntaxException | IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // 判断是否请求成功
+        if(Objects.isNull(exploreFormDataJson.getAsJsonObject().get("key")))
+            return SaResult.error("构建exploreFormData失败");
+        String form_data_key = exploreFormDataJson.getAsJsonObject().get("key").getAsString();
+
+        // 创建请求体
+        JsonObject permalinkJson = generatePermalinkJson(query_id, form_data_key, all_columns);
+        // 向superset发起permentlink生成请求
+        JsonElement permalinkJsonElement = null;
+        try {
+            permalinkJsonElement = client.permalink(permalinkJson);
+        } catch (URISyntaxException | IOException e) {
+            throw new RuntimeException(e);
+        }
+        // 判断是否请求成功
+        if(Objects.isNull(permalinkJsonElement.getAsJsonObject().get("url")))
+            return SaResult.error("构建permalink失败");
+
+        Map urlMap = gson.fromJson(permalinkJsonElement.getAsJsonObject(), Map.class);
+        urlMap.put("url", "http://" + client.getHost() + ":" + client.getPort() +
+                SUPERSET_PERMALINK_URL+
+                permalinkJsonElement.getAsJsonObject().get("key").getAsString()+
+                "/?standalone=1");
+        urlMap.put("xlxsBody",
+                generateXlsxJson(query_id, all_columns, queryLimit, form_data_key,
+                        permalinkJsonElement.getAsJsonObject().get("key").getAsString()).toString());
+        urlMap.put("host", "http://" + client.getHost() + ":" + client.getPort());
+        return urlMap;
     }
 
 
-//
-//	public static HttpUriRequest geListDashboardsRequest(String host, int port, String authToken)
-//			throws URISyntaxException {
-//		JsonArray columns = new JsonArray();
-//		columns.add("dashboard_title");
-//		columns.add("id");
-//		JsonObject param = new JsonObject();
-//		param.add("columns", columns);
-//
-//		URI apiUri = buildUri(host, port, LIST_DASHBOARD_API_ENDPOINT,
-//				Arrays.asList(Pair.of("q", param.toString())));
-//
-//		HttpUriRequest get = RequestBuilder.get() //
-//				.setUri(apiUri) //
-//				.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + authToken) //
-//				.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.getMimeType()) //
-//				.build();
-//		return get;
-//	}
-//
-//	private static URI buildUri(String host, int port, String endpoint, List<Pair<String, String>> params)
-//			throws URISyntaxException {
-//		URIBuilder builder = new URIBuilder();
-//		builder.setScheme("http").setHost(host).setPort(port).setPath(endpoint);
-//
-//		if (!CollectionUtils.isEmpty(params)) {
-//			params.stream().forEach(p -> {
-//				builder.addParameter(p.getKey(), p.getValue());
-//			});
-//		}
-//
-//		return builder.build();
-//	}
-//
-//
-//	private ApiResponse executeRequest(HttpUriRequest request)
-//			throws ClientProtocolException, IOException, superset.client.exception.UnexceptedResponseException {
-//		try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
-//			try (CloseableHttpResponse response = client.execute(request)) {
-//				int code = response.getStatusLine().getStatusCode();
-//				String bodyAsString = EntityUtils.toString(response.getEntity());
-//				if (code >= 300 || code < 200) {
-//					throw new superset.client.exception.UnexceptedResponseException(request.getURI().toString(), code, bodyAsString);
-//				}
-//				return new ApiResponse(code, bodyAsString);
-//			}
-//		}
-//	}
-//
-//
-////	public Client(String host, int port, String username, String password, CloseableHttpClient client)
-////			throws Exception {
-////		if (client == null) {
-////			this.client = HttpClientBuilder.create().build();
-////		} else {
-////			this.client = client;
-////		}
-//////		HttpUriRequest request = Api.getAuthTokenRequest(host, port, username, password);
-////		ApiResponse resp = executeRequest(request);
-////		JsonElement respBody = JsonParser.parseString(resp.getBody());
-////		String token = respBody.getAsJsonObject().get("access_token").getAsString();
-////		this.authToken = token;
-////		this.host = host;
-////		this.port = port;
-////	}
-//
-//	@AllArgsConstructor
-//	@Data
-//	public static class ApiResponse {
-//		private int code;
-//		private String body;
-//	}
 
     private String removeOuterQuotes(String jsonString) {
         String regex = "^\"(.*)\"$";
@@ -457,6 +472,33 @@ public class SaOAuth2ServerController {
         return true;
     }
 
+    private JsonObject generateSqlExeucuteJson(Integer database_id, String sql, String schema, String tab,
+                                              Integer queryLimit, String templateParams) {
+        JsonObject jsonObject = new JsonObject();
+
+        // 随机生成一个client_id
+        jsonObject.add("client_id", new JsonPrimitive(RandomString.generateRandomString()));
+        jsonObject.add("database_id", new JsonPrimitive(database_id));
+        jsonObject.add("json", new JsonPrimitive(true));
+        jsonObject.add("runAsync", new JsonPrimitive(false));
+        jsonObject.add("schema", new JsonPrimitive(schema));
+        jsonObject.add("sql", new JsonPrimitive(sql));
+        jsonObject.add("tab", new JsonPrimitive(tab));
+
+//        JsonObject templateParams = new JsonObject();
+//        templateParams.add("value1", new JsonPrimitive(3));
+//        templateParams.add("value2", new JsonPrimitive(40));
+        jsonObject.add("templateParams", new JsonPrimitive(templateParams));
+
+        jsonObject.add("tmp_table_name", new JsonPrimitive(""));
+        jsonObject.add("select_as_cta", new JsonPrimitive(false));
+        jsonObject.add("ctas_method", new JsonPrimitive("TABLE"));
+        jsonObject.add("queryLimit", new JsonPrimitive(queryLimit));
+        jsonObject.add("expand_data", new JsonPrimitive(true));
+
+        return jsonObject;
+    }
+
     private JsonObject generateNativeFiltersJson(List<DashboardFilter> filterList) {
         JsonObject result = new JsonObject();
         Gson gson = new Gson();
@@ -490,6 +532,106 @@ public class SaOAuth2ServerController {
         }
 
         return result;
+    }
+
+    private JsonObject generateExploreFormDataJson(Integer datasourceId,List<String> formData){
+        JsonObject mainObject = new JsonObject();
+        mainObject.addProperty("datasource_id", datasourceId);
+        mainObject.addProperty("datasource_type", "query");
+
+        JsonObject formDataObject = new JsonObject();
+        formDataObject.add("metrics", new JsonArray());
+        formDataObject.add("groupby", new JsonArray());
+        formDataObject.addProperty("time_range", "No filter");
+        formDataObject.addProperty("row_limit", 1000);
+        formDataObject.addProperty("datasource", datasourceId + "__query");
+
+        JsonArray allColumnsArray = new JsonArray();
+        for (String column : formData) {
+            allColumnsArray.add(column);
+        }
+        formDataObject.add("all_columns", allColumnsArray);
+
+        mainObject.addProperty("form_data", formDataObject.toString());
+        return mainObject;
+    }
+
+    private JsonObject generatePermalinkJson(int datasourceId, String formDataKey, List<String> allColumns) {
+        JsonObject jsonObject = new JsonObject();
+
+        JsonObject formData = new JsonObject();
+        formData.addProperty("datasource", datasourceId + "__query");
+        formData.addProperty("viz_type", "table");
+
+        JsonObject urlParams = new JsonObject();
+        urlParams.addProperty("form_data_key", formDataKey);
+        formData.add("url_params", urlParams);
+
+        formData.addProperty("query_mode", "raw");
+        formData.add("groupby", new JsonArray());
+        formData.addProperty("time_grain_sqla", "P1D");
+        formData.add("temporal_columns_lookup", new JsonObject());
+        formData.add("metrics", new JsonArray());
+
+        JsonArray allColumnsArray = new JsonArray();
+        for (String column : allColumns) {
+            allColumnsArray.add(column);
+        }
+        formData.add("all_columns", allColumnsArray);
+
+        formData.add("percent_metrics", new JsonArray());
+        formData.add("adhoc_filters", new JsonArray());
+        formData.add("order_by_cols", new JsonArray());
+        formData.addProperty("row_limit", 1000);
+        formData.addProperty("server_page_length", 10);
+        formData.addProperty("page_length",20);
+        formData.addProperty("order_desc", true);
+        formData.addProperty("table_timestamp_format", "smart_date");
+        formData.addProperty("show_cell_bars", false);
+        formData.addProperty("color_pn", true);
+        formData.add("extra_form_data", new JsonObject());
+
+        jsonObject.add("formData", formData);
+        jsonObject.add("urlParams", new JsonArray());
+
+        return jsonObject;
+    }
+
+    private JsonObject generateXlsxJson(int datasourceId, List<String> columns, int rowLimit, String formDataKey, String permalinkKey) {
+        JsonObject jsonObject = new JsonObject();
+
+        JsonObject datasource = new JsonObject();
+        datasource.addProperty("id", datasourceId);
+        datasource.addProperty("type", "query");
+        jsonObject.add("datasource", datasource);
+
+        jsonObject.addProperty("force", false);
+
+        JsonArray queries = new JsonArray();
+        JsonObject query = new JsonObject();
+
+        JsonArray columnsArray = new JsonArray();
+        for (String column : columns) {
+            columnsArray.add(column);
+        }
+        query.add("columns", columnsArray);
+
+        query.addProperty("row_limit", rowLimit);
+        query.addProperty("order_desc", true);
+
+        JsonObject urlParams = new JsonObject();
+        urlParams.addProperty("form_data_key", formDataKey);
+        urlParams.addProperty("permalink_key", permalinkKey);
+        query.add("url_params", urlParams);
+
+        queries.add(query);
+        jsonObject.add("queries", queries);
+
+        jsonObject.addProperty("result_format", "xlsx");
+        jsonObject.addProperty("result_type", "results");
+
+        return jsonObject;
+
     }
 
     @Data

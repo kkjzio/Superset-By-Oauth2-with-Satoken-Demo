@@ -30,7 +30,7 @@ public class SaOAuthClientController {
     // 相关参数配置
     private String clientId = "1001";                                // 应用id
     private String clientSecret = "aaaa-bbbb-cccc-dddd-eeee";        // 应用秘钥
-    private String serverUrl = "http://sa-oauth-server.com:8001";    // 服务端接口
+    private String serverUrl = "http://server.mydomain.com";    // 服务端接口
 
     // 进入首页
     @RequestMapping("/")
@@ -213,7 +213,7 @@ public class SaOAuthClientController {
 
 
     @RequestMapping("/surpsetSqlLab")
-    public SaResult surpsetSqlLab(String accessToken, String value1,String value2) {
+    public SaResult surpsetSqlLabPublic(String accessToken, String value1,String value2) {
         JSONObject searchValue = new JSONObject();
         try {
             searchValue.put("value1", value1);
@@ -241,6 +241,26 @@ public class SaOAuthClientController {
         return SaResult.data(data);
 //		return "redirect:http://localhost:8088/superset/dashboard/1/";
     }
+
+//    @RequestMapping("/surpsetSqlLabPrivate")
+//    public String surpsetSqlLabPrivate(String accessToken, String value1,String value2) {
+//        JSONObject searchValue = new JSONObject();
+//        try {
+//            searchValue.put("value1", value1);
+//            searchValue.put("value2", value2);
+//        } catch (JSONException e) {
+//            throw new RuntimeException(e);
+//        }
+//        // 调用Server端接口，查询开放的资源
+//        String str = OkHttps.sync(serverUrl + "/oauth2/superset/videoSearchSqlPrivate")
+//                .addBodyPara("access_token", accessToken)
+//                .addBodyPara("searchValue", searchValue)
+//                .post()
+//                .getBody()
+//                .toString();
+//        return str;
+////		return "redirect:http://localhost:8088/superset/dashboard/1/";
+//    }
 
     // 全局异常拦截
     @ExceptionHandler

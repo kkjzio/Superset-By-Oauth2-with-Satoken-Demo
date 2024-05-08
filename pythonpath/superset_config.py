@@ -2,6 +2,8 @@ from flask_appbuilder.security.manager import AUTH_OAUTH
 from custom_sso_security_manager import CustomSsoSecurityManager
 CUSTOM_SECURITY_MANAGER = CustomSsoSecurityManager
 
+# The base URL to query for accessing the user interface
+# WEBDRIVER_BASEURL = "http://192.168.59.129:8088/"
 
 # 启动数据源
 SQLALCHEMY_DATABASE_URI = "mysql://root:123456@192.168.59.129:3306/superset?charset=utf8"
@@ -10,6 +12,9 @@ BABEL_DEFAULT_LOCALE = "zh"
 
 # 去掉X-Frame-Options限制，可以免去跨域访问问题：直接将里面置空就好了
 HTTP_HEADERS = {}
+# 设置可以设置cookies的域名
+SESSION_COOKIE_DOMAIN = ".mydomain.com"
+
 # WTF_CSRF_ENABLED设置为False
 WTF_CSRF_ENABLED = False
 # 将PUBLIC_ROLE_LIKE 设置为Gamma
@@ -56,9 +61,9 @@ OAUTH_PROVIDERS = [
                 'client_secret':'aaaa-bbbb-cccc-dddd-eeee'
             },
             'access_token_method':'POST',    # HTTP Method to call access_token_url
-            'api_base_url':'http://192.168.59.1:8001/oauth2/',
-            'access_token_url':'http://192.168.59.1:8001/oauth2/token',
-            'authorize_url':'http://192.168.59.1:8001/oauth2/authorize'
+            'api_base_url':'http://server.mydomain.com/oauth2/',
+            'access_token_url':'http://server.mydomain.com/oauth2/token',
+            'authorize_url':'http://server.mydomain.com/oauth2/authorize'
         }
     }
 ]
@@ -74,6 +79,5 @@ AUTH_USER_REGISTRATION = True
 # The default user self registration role
 #AUTH_USER_REGISTRATION_ROLE = "Public"
 #AUTH_USER_REGISTRATION_ROLE = "ReadOnly"
-
 
 

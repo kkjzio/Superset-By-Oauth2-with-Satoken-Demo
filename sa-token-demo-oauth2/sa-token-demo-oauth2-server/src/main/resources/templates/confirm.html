@@ -32,7 +32,7 @@
 			function yes() {
 				console.log('-----------');
 				$.ajax({
-					url: '/oauth2/doConfirm',
+					url: 'http://server.mydomain.com/oauth2/doConfirm',
 					data: {
 						client_id: getParam('client_id'),
 						scope: getParam('scope')

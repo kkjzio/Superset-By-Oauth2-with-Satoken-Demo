@@ -100,33 +100,33 @@
     <h3>模式一：授权码（Authorization Code）</h3>
     <p class="pst">授权码：OAuth2.0标准授权流程，先 (重定向) 获取Code授权码，再 (Rest API) 获取 Access-Token 和 Openid </p>
 
-    <a href="http://sa-oauth-server.com:8001/oauth2/authorize?response_type=code&client_id=1001&redirect_uri=http://sa-oauth-client.com:8002/">
+    <a href="http://server.mydomain.com/oauth2/authorize?response_type=code&client_id=1001&redirect_uri=http://mydomain.com/">
         <button>点我开始授权登录（静默授权）</button>
     </a>
     <span class="ps">当请求链接不包含scope权限时，将无需用户手动确认，做到静默授权，当然此时我们也只能获取openid</span>
-    <code>http://sa-oauth-server.com:8001/oauth2/authorize?response_type=code&client_id=1001&redirect_uri=http://sa-oauth-client.com:8002/</code>
+    <code>http://server.mydomain.com/oauth2/authorize?response_type=code&client_id=1001&redirect_uri=http://mydomain.com/</code>
 
-    <a href="http://sa-oauth-server.com:8001/oauth2/authorize?response_type=code&client_id=1001&redirect_uri=http://sa-oauth-client.com:8002/&scope=userinfo">
+    <a href="http://server.mydomain.com/oauth2/authorize?response_type=code&client_id=1001&redirect_uri=http://mydomain.com/&scope=userinfo">
         <button>授权登录（显式授权）</button>
     </a>
     <span class="ps">当请求链接包含具体的scope权限时，将需要用户手动确认，此时我们除了openid以外还可以获取更多的资源</span>
-    <code>http://sa-oauth-server.com:8001/oauth2/authorize?response_type=code&client_id=1001&redirect_uri=http://sa-oauth-client.com:8002/&scope=userinfo</code>
+    <code>http://server.mydomain.com/oauth2/authorize?response_type=code&client_id=1001&redirect_uri=http://mydomain.com/&scope=userinfo</code>
 
     <button onclick="refreshToken()">刷新令牌</button>
     <span class="ps">我们可以拿着 Refresh-Token 去刷新我们的 Access-Token，每次刷新后旧Token将作废</span>
-    <code>http://sa-oauth-server.com:8001/oauth2/refresh?grant_type=refresh_token&client_id={value}&client_secret={value}&refresh_token={value}</code>
+    <code>http://server.mydomain.com/oauth2/refresh?grant_type=refresh_token&client_id={value}&client_secret={value}&refresh_token={value}</code>
 
     <button onclick="getUserinfo()">获取账号信息</button>
     <span class="ps">使用 Access-Token 置换资源: 获取账号昵称、头像、性别等信息 (Access-Token具备userinfo权限时才可以获取成功) </span>
-    <code>http://sa-oauth-server.com:8001/oauth2/userinfo?access_token={value}</code>
+    <code>http://server.mydomain.com/oauth2/userinfo?access_token={value}</code>
 
     <br>
     <h3>模式二：隐藏式（Implicit）</h3>
-    <a href="http://sa-oauth-server.com:8001/oauth2/authorize?response_type=token&client_id=1001&redirect_uri=http://sa-oauth-client.com:8002/&scope=userinfo">
+    <a href="http://server.mydomain.com/oauth2/authorize?response_type=token&client_id=1001&redirect_uri=http://mydomain.com/&scope=userinfo">
         <button>隐藏式</button>
     </a>
     <span class="ps">越过授权码的步骤，直接返回token到前端页面（ 格式：http//:domain.com#token=xxxx-xxxx ）</span>
-    <code>http://sa-oauth-server.com:8001/oauth2/authorize?response_type=token&client_id=1001&redirect_uri=http://sa-oauth-client.com:8002/&scope=userinfo</code>
+    <code>http://server.mydomain.com/oauth2/authorize?response_type=token&client_id=1001&redirect_uri=http://mydomain.com/&scope=userinfo</code>
 
     <br>
     <h3>模式三：密码式（Password）</h3>
@@ -134,7 +134,7 @@
     账号：<input name="username">
     密码：<input name="password">
     <button onclick="passwordLogin()">登录</button>
-    <code>http://sa-oauth-server.com:8001/oauth2/token?grant_type=password&client_id={value}&client_secret={value}&username={value}&password={value}</code>
+    <code>http://server.mydomain.com/oauth2/token?grant_type=password&client_id={value}&client_secret={value}&username={value}&password={value}</code>
 
     <br>
     <h3>模式四：凭证式（Client Credentials）</h3>
@@ -146,30 +146,31 @@
         保证了服务的高可用</p>
 
     <button onclick="getClientToken()">获取应用Client-Token</button>
-    <code>http://sa-oauth-server.com:8001/oauth2/client_token?grant_type=client_credentials&client_id={value}&client_secret={value}</code>
+    <code>http://server.mydomain.com/oauth2/client_token?grant_type=client_credentials&client_id={value}&client_secret={value}</code>
 
     <br>
     <!--			<h3>测试Surpset</h3>-->
     <!--			<p class="pst">打开新页面测试Oauth2是否可用</p>-->
     <!--&lt;!&ndash;			输入VideoType和videoID，动态交互表格数据&ndash;&gt;-->
-    <!--			<form action="http://sa-oauth-server.com:8001/oauth2/superset/videoSearch">-->
+    <!--			<form action="http://server.mydomain.com/oauth2/superset/videoSearch">-->
     <!--				<input type="text" name="VideoType" placeholder="请输入视频类型"><br>-->
     <!--				<input type="text" name="videoID" placeholder="请输入视频id"><br>-->
     <!--				<button type="submit">打开Surpset</button>-->
     <!--			</form>-->
-    <!--			<code>http://sa-oauth-server.com:8001/oauth2/userinfo?access_token={value}</code>-->
+    <!--			<code>http://server.mydomain.com/oauth2/userinfo?access_token={value}</code>-->
 
     <h3>登录Surpset</h3>
     <p class="pst">跳转至登录验证页面</p>
     <!--			输入VideoType和videoID，动态交互表格数据-->
-    <a href="http://192.168.59.129:8088/login/egaSSO?next=" target="_blank">
+    <a href="http://superset.mydomain.com/login/egaSSO?next=" target="_blank">
         <button>点我开始授权登录（静默授权）</button>
     </a>
-    <code>http://192.168.59.129:8088/login/egaSSO?next=</code>
+    <code>http://superset.mydomain.com/login/egaSSO?next=</code>
+    <br><br>
 
 
-    <h3>测试Surpset</h3>
-    <p class="pst">打开新页面测试Oauth2是否可用</p>
+    <h3>测试SurpsetNativeFillter</h3>
+    <p class="pst">测试FillterOauth2是否可用</p>
     <!--			输入VideoType和videoID，动态交互表格数据-->
     <form>
         <input type="text" name="VideoType" placeholder="请输入视频类型"><br>
@@ -177,18 +178,42 @@
         <button type="button" onclick=redirectToSurpset()>打开Surpset</button>
     </form>
     <code>打开新的窗口，跳转至superset</code>
+    <br><br>
 
 
+<!--    <h3>测试SurpsetSqlLab</h3>-->
+<!--    <p class="pst">测试sqlLab接口是否可用，输入视频ID的最小值和最大值</p>-->
+<!--    <form>-->
+<!--        <input type="text" name="value1" placeholder="最小值"><br>-->
+<!--        <input type="text" name="value2" placeholder="最大值"><br>-->
+<!--        <button type="button" onclick=surpsetSqlLabPublic()>打开Surpset</button>-->
+<!--    </form>-->
+<!--    <code>打开新的窗口，跳转至superset</code>-->
+
+<!--    <br><br>-->
     <h3>测试SurpsetSqlLab</h3>
     <p class="pst">测试sqlLab接口是否可用，输入视频ID的最小值和最大值</p>
     <form>
         <input type="text" name="value1" placeholder="最小值"><br>
         <input type="text" name="value2" placeholder="最大值"><br>
-        <button type="button" onclick=surpsetSqlLab()>打开Surpset</button>
+        <button type="button" onclick=surpsetSqlLab()>异步加载Surpset</button>
+        <button type="button" onclick=surpsetSqlLabxlxsDown()>下载结果</button>
     </form>
-    <code>打开新的窗口，跳转至superset</code>
+    <code>http://superset.mydomain.com/superset/explore/p/jBMPq97POkl/?standalone=1&height=400</code>
+    <iframe
+            width="600"
+            height="400"
+            seamless
+            frameBorder="0"
+            scrolling="no"
+            src="http://superset.mydomain.com/superset/explore/p/jBMPq97POkl/?standalone=1&height=400"
+            id="myIframe"
+    >
+        <!--        src="http://superset.superset.mydomain.com/explore/p/5brP2B8P9yx/?standalone=1"-->
+    </iframe>
 
     <br><br>
+
     <span>更多资料请参考 Sa-Token 官方文档地址：</span>
     <a href="https://sa-token.cc/">https://sa-token.cc/</a>
 
@@ -198,6 +223,21 @@
 <script src="https://www.layuicdn.com/layer-v3.1.1/layer.js"></script>
 <script>window.jQuery || alert('当前页面CDN服务商已宕机，请将所有js包更换为本地依赖')</script>
 <script type="text/javascript">
+    // 给iframe增加跨域设置
+    // document.domain = 'superset.mydomain.com'; // 确保父域相同
+    // var iframe = document.getElementById('myframe');
+    // iframe.onload = function() {
+    //     var doc = iframe.contentDocument || iframe.contentWindow.document;
+    //     var request = new XMLHttpRequest();
+    //     request.open('GET', 'http://superset.superset.mydomain.com/explore/p/5brP2B8P9yx/?standalone=1', true);
+    //     request.withCredentials = true; // 设置withCredentials为true
+    //     request.send();
+    // };
+
+
+    // 全局变量
+    var xlxsBody = null;
+    var host = null;
 
     // 根据code授权码进行登录
     function doLogin(code) {
@@ -294,7 +334,7 @@
 
     function redirectToSurpset() {
         var accessToken = $('.access_token').text();
-        var data= {
+        var data = {
             accessToken: accessToken.toString(),
             slug: 'Test-Dashboard',
             // VideoType: $('[name=VideoType]').val(),
@@ -327,7 +367,7 @@
                 if (res.code == 200) {
                     // setInfo(res.data);
                     layer.msg('获取成功！:' + res.data.url.toString());
-                    window.open(res.data.url.toString(),'_blank');
+                    window.open(res.data.url.toString(), '_blank');
                 } else {
                     layer.msg(res.msg);
                 }
@@ -338,12 +378,46 @@
         });
     }
 
+    // function surpsetSqlLabPublic() {
+    //     var accessToken = $('.access_token').text();
+    //     var data = {
+    //         accessToken: accessToken.toString(),
+    //         value1: $('[name=value1]').val(),
+    //         value2: $('[name=value2]').val()
+    //     };
+    //     console.log(data);
+    //     if (accessToken == '') {
+    //         return layer.alert('您还没有获取 Access-Token ，请先授权登录');
+    //     }
+    //     $.ajax({
+    //         url: '/surpsetSqlLabPublic',
+    //         // method: 'POST',
+    //         // contentType: 'application/json',
+    //         // data: JSON.stringify(data),
+    //         data: data,
+    //         dataType: 'json',
+    //         success: function (res) {
+    //             console.log('返回：', res);
+    //             if (res.code == 200) {
+    //                 // setInfo(res.data);
+    //                 layer.msg('获取成功！:' + res.data.url.toString());
+    //                 window.open(res.data.url.toString(), '_blank');
+    //             } else {
+    //                 layer.msg(res.msg);
+    //             }
+    //         },
+    //         error: function (xhr, type, errorThrown) {
+    //             return layer.alert("异常：" + JSON.stringify(xhr));
+    //         }
+    //     });
+    // }
+
     function surpsetSqlLab() {
         var accessToken = $('.access_token').text();
-        var data= {
+        var data = {
             accessToken: accessToken.toString(),
-                value1 : $('[name=value1]').val(),
-                value2 : $('[name=value2]').val()
+            value1: $('[name=value1]').val(),
+            value2: $('[name=value2]').val()
         };
         console.log(data);
         if (accessToken == '') {
@@ -360,13 +434,100 @@
                 console.log('返回：', res);
                 if (res.code == 200) {
                     // setInfo(res.data);
-                    layer.msg('获取成功！:' + res.data.url.toString());
-                    window.open(res.data.url.toString(),'_blank');
+                    layer.msg('获取成功！:' + res.toString());
+                    // window.open(res.data.url.toString(), '_blank');
+                    var iframe = document.getElementById('myIframe');
+                    iframe.src = res.data.url.toString();
+                    xlxsBody = res.data.xlxsBody;
+                    host = res.data.host;
                 } else {
                     layer.msg(res.msg);
                 }
             },
             error: function (xhr, type, errorThrown) {
+                return layer.alert("异常：" + JSON.stringify(xhr));
+            }
+        });
+    }
+
+    function getFileNameStr(){
+        var date = new Date();
+
+        var year = date.getFullYear();
+        var month = ("0" + (date.getMonth() + 1)).slice(-2); // months are zero indexed
+        var day = ("0" + date.getDate()).slice(-2);
+        var hour = ("0" + date.getHours()).slice(-2);
+        var minute = ("0" + date.getMinutes()).slice(-2);
+        var second = ("0" + date.getSeconds()).slice(-2);
+
+        var filename = year + month + day + "_" + hour + minute + second;
+
+        return filename;
+    }
+
+
+    function surpsetSqlLabxlxsDown() {
+        if (xlxsBody == null) {
+            return layer.alert('您还没有进行查询 ，请先查询');
+        }
+        var data = xlxsBody;
+        console.log(data);
+
+        // fetch('http://mydomain.com/api/v1/chart/data', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json'
+        //     },
+        //     body: JSON.stringify(data),
+        //     credentials: 'include' // to include cookies in the request
+        // })
+        //     .then(response => response.blob()) // get the response as a blob
+        //     .then(blob => {
+        //         // create a new blob url
+        //         var url = window.URL.createObjectURL(blob);
+        //
+        //         // create a link and simulate a click to download the file
+        //         var a = document.createElement('a');
+        //         a.href = url;
+        //         a.download = 'filename.xlsx'; // or get the filename from the 'Content-Disposition' header
+        //         a.click();
+        //     })
+        //     .catch(error => console.error('Error:', error));
+
+        $.ajax({
+            url: host.toString() + '/api/v1/chart/data',
+            method: 'POST',
+            contentType: 'application/json',
+            // data: JSON.stringify(data),
+            data: data,
+            xhrFields: {
+                // 允许携带cookies
+                withCredentials: true,
+                responseType: 'blob' // 设置响应类型为二进制流
+            },
+            // dataType: 'blob', // get the response as a blob
+            success: function (data, textStatus, jqXHR) {
+                // console.log("jjjjjjjj")
+                debugger;
+                // var contentDisposition = jqXHR.getResponseHeader('Content-Disposition');
+                // var match = contentDisposition.match('/filename="(.+)"/');
+                var filename = getFileNameStr();
+
+                // if (match != null && match.length > 1) {
+                //     var filename = match[1];
+                //     console.log(filename);
+                // }
+                // 创建一个Blob URL
+                var url = window.URL || window.webkitURL;
+                var fileUrl = url.createObjectURL(data);
+
+                // 创建一个新的a元素，然后通过模拟点击来下载文件
+                var a = document.createElement('a');
+                a.href = fileUrl;
+                a.download = filename.toString();  // 设置下载的文件名
+                a.click();
+            },
+            error: function (xhr) {
                 return layer.alert("异常：" + JSON.stringify(xhr));
             }
         });
