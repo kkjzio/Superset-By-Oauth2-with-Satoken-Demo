@@ -250,19 +250,7 @@ https://github.com/dromara/Sa-Token/tree/dev/sa-token-demo/sa-token-demo-oauth2
 
 
 
-3. 依照satoken官方的要求，更改hosts:
-
-   ```
-   首先在host文件 (C:\windows\system32\drivers\etc\hosts) 添加以下内容: 
-   	127.0.0.1 sa-oauth-server.com 
-   	127.0.0.1 sa-oauth-client.com 
-   再从浏览器访问：
-   	http://sa-oauth-client.com:8002
-   ```
-
-
-
-4. 按顺序启动：
+3. 按顺序启动：
 
 + nginx
 + redis
@@ -277,7 +265,7 @@ https://github.com/dromara/Sa-Token/tree/dev/sa-token-demo/sa-token-demo-oauth2
 首先浏览器打开
 
 ```
-http://127.0.0.1:8088
+http://superset.mydomain.com/
 ```
 
 进入superset页面
@@ -333,12 +321,12 @@ password:123456
 ### 2.使用satoken的oauth2服务跳转superset
 
 ```
-http://sa-oauth-client.com:8002
+http://mydomain.com/
 ```
 
 点击授权码登录中的显示登录
 
-![image-20240416111738547](https://raw.githubusercontent.com/kkjzio/Superset-By-Oauth2-with-Satoken-Demo/main/README.assets/image-20240416111738547.png)
+![image-20240508155539780](https://raw.githubusercontent.com/kkjzio/Superset-By-Oauth2-with-Satoken-Demo/main/README.assets/image-20240508155539780.png)
 
 这里设置了两种用户权限，管理员（~~这步其实可以跳过，但是我没改demo的认证逻辑~~）
 
