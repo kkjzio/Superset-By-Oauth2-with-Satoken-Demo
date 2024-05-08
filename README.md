@@ -377,7 +377,7 @@ sqllab可以通过自定义sql语句，动态的控制表格内容，具体使�
 
 + 输入视频id的最小值、最大值，异步加载界面，并且可以下载xlxs文件
 
-![image-20240508143301920](C:\project\20240325\README.assets\image-20240508143301920.png)
+![image-20240508143301920](https://raw.githubusercontent.com/kkjzio/Superset-By-Oauth2-with-Satoken-Demo/main/README.assets/image-20240508143301920.png)
 
 
 
