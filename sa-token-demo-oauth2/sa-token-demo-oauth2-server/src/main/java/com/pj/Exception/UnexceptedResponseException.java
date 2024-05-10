@@ -1,4 +1,4 @@
-package superset.client.exception;
+package com.pj.Exception;
 
 import java.rmi.ConnectException;
 

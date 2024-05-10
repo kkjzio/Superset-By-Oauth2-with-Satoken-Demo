@@ -7,6 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 
 import com.google.gson.JsonObject;
+import com.pj.Exception.UnexceptedResponseException;
 import lombok.Getter;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
@@ -28,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
-import superset.client.exception.UnexceptedResponseException;
+
 
 /**
  * A client for interacting with the Superset API. This client provides methods
