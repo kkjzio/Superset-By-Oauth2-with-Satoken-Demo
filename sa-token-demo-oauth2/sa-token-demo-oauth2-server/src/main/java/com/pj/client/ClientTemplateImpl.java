@@ -4,7 +4,9 @@ import cn.dev33.satoken.oauth2.model.SaClientModel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+
 
 @Component
 @Slf4j
@@ -21,9 +23,12 @@ public class ClientTemplateImpl {
     @Value("${superset.user.password}")
    private String password;
 
+
+    @Lazy
     @Bean
     public Client getClient() {
         try {
+            log.info("LazyBean Client Initialized");
             return new Client(host, port, username, password);
         } catch (Exception e) {
             log.error("++++++++++++++++++++++++++++++++Error creating client++++++++++++++++++++++++++++++++", e);

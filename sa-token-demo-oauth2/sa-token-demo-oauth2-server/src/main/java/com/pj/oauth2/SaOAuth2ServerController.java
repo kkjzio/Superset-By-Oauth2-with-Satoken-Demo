@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,13 +40,17 @@ import cn.dev33.satoken.util.SaResult;
 @RestController
 public class SaOAuth2ServerController {
 
-    @Autowired
-    private Client client;
+    private final Client client;
 
     //    private static final String SUPERSET_HOST = "http://192.168.59.129:8088";
     private final String SUPERSET_FILTER_URL_L = "/superset/dashboard/";
     private final String SUPERSET_FILTER_URL_R = "/?standalone=3&show_filters=0&native_filters=";
     private final String SUPERSET_PERMALINK_URL = "/superset/explore/p/";
+
+    // 懒加载查询用户
+    public SaOAuth2ServerController(@Lazy Client client) {
+        this.client = client;
+    }
 //	private static final Integer SUPERSET_PORT = 8088;
 //	private static final String LIST_DASHBOARD_API_ENDPOINT = "/api/v1/dashboard/";
 
